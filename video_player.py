@@ -5,7 +5,6 @@ import tkinter as tk
 from tkinter import filedialog, ttk
 from PIL import Image, ImageDraw, ImageFont, ImageTk
 import cv2
-import time
 
 # 支持的视频格式
 VIDEO_FORMATS = ('.mp4', '.avi', '.mov')
@@ -14,7 +13,13 @@ class VideoPlayerApp:
     def __init__(self, root):
         self.root = root
         self.root.title("视频播放器")
-        self.root.geometry("1000x500")  # 设置窗口尺寸以适应新的布局
+        self.root.geometry("1000x500")  # 设置窗口尺寸
+        self.root.minsize(600, 400)
+
+        # 使布局在调整窗口大小时能够自适应
+        self.root.grid_rowconfigure(0, weight=1)
+        self.root.grid_columnconfigure(0, weight=0)
+        self.root.grid_columnconfigure(1, weight=1)
 
         self.video_list = []
         self.current_video_path = ""
@@ -22,27 +27,29 @@ class VideoPlayerApp:
         self.is_playing = False
         self.show_answer = tk.BooleanVar(value=False)
 
-        # 创建 Canvas 并添加到 root，用于背景和视频播放
-        self.canvas = tk.Canvas(root, width=1000, height=500)
-        self.canvas.pack(fill="both", expand=True)
-
-        # 加载背景图片
+        # 加载背景图片并放置在根窗口底层
         bg_image_path = os.path.join(os.path.dirname(os.path.realpath(__file__)), 'img/bg.png')
         self.bg_image = Image.open(bg_image_path)
         self.bg_photo = ImageTk.PhotoImage(self.bg_image)
-        self.canvas.create_image(0, 0, image=self.bg_photo, anchor="nw")
+        self.bg_label = tk.Label(self.root, image=self.bg_photo)
+        self.bg_label.place(x=0, y=0, relwidth=1, relheight=1)
+        self.root.bind("<Configure>", self.resize_bg_image)
+        # 右侧视频显示框架
+        self.video_frame = ttk.Frame(self.root, style="MainFrame.TFrame")
+        self.video_frame.grid(row=0, column=1, sticky="nsew", padx=(0, 10), pady=10)
+        self.video_frame.grid_rowconfigure(0, weight=1)
+        self.video_frame.grid_columnconfigure(0, weight=1)
 
-        # 设置视频显示区域，放置于右侧
-        self.video_label = tk.Label(self.canvas, relief="sunken", borderwidth=2, background="black")
-        self.video_label.place(x=380, y=20, width=480, height=460)  # 右侧位置
+        self.video_label = tk.Label(self.video_frame, relief="sunken", borderwidth=2, background="black")
+        self.video_label.grid(row=0, column=0, sticky="nsew")
 
         # 进度条，放在视频显示标签下方
-        self.progress = ttk.Progressbar(self.canvas, orient="horizontal", mode="determinate", style="TProgressbar")
-        self.progress.place(x=380, y=475, width=480, height=20)
+        self.progress = ttk.Progressbar(self.video_frame, orient="horizontal", mode="determinate", style="TProgressbar")
+        self.progress.grid(row=1, column=0, sticky="ew", pady=(5, 0))
 
-        # 主框架放置在左上角
-        self.main_frame = ttk.Frame(self.canvas, padding="10", style="MainFrame.TFrame")
-        self.main_frame.place(x=20, y=20, width=200, height=400)
+        # 左侧控制框架
+        self.main_frame = ttk.Frame(self.root, padding="10", style="MainFrame.TFrame")
+        self.main_frame.grid(row=0, column=0, sticky="nsw", padx=(10, 5), pady=10)
 
 
         # 在Windows系统上设置透明度
@@ -81,8 +88,11 @@ class VideoPlayerApp:
                                              offvalue=False, command=self.update_display)
         self.answer_button.grid(column=0, row=5, padx=5, pady=5, sticky=tk.EW)
 
-        # 设置占位符
-        self.placeholder_image = self.create_placeholder_image(460, 480)  # 适应 video_label 大小
+        # 设置占位符，根据当前标签大小生成
+        self.root.update_idletasks()
+        placeholder_w = self.video_label.winfo_width() or 460
+        placeholder_h = self.video_label.winfo_height() or 480
+        self.placeholder_image = self.create_placeholder_image(placeholder_w, placeholder_h)
         self.video_label.config(image=self.placeholder_image)
         self.video_label.image = self.placeholder_image
 
@@ -234,9 +244,8 @@ class VideoPlayerApp:
 
 
 
-                # 以下部分保持不变
-                label_width = 460
-                label_height = 480
+                label_width = self.video_label.winfo_width() or 460
+                label_height = self.video_label.winfo_height() or 480
                 frame = cv2.resize(frame, (label_width, label_height))
                 frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
                 image = Image.fromarray(frame)
@@ -272,10 +281,20 @@ class VideoPlayerApp:
         self.bg_label.config(image=self.bg_photo)
         self.bg_label.image = self.bg_photo  # 避免垃圾回收
 
+        if not self.is_playing:
+            placeholder_w = self.video_label.winfo_width() or 460
+            placeholder_h = self.video_label.winfo_height() or 480
+            self.placeholder_image = self.create_placeholder_image(placeholder_w, placeholder_h)
+            self.video_label.config(image=self.placeholder_image)
+            self.video_label.image = self.placeholder_image
+
     def finish_playing(self):
         if self.cap:
             self.cap.release()
         self.is_playing = False
+        placeholder_w = self.video_label.winfo_width() or 460
+        placeholder_h = self.video_label.winfo_height() or 480
+        self.placeholder_image = self.create_placeholder_image(placeholder_w, placeholder_h)
         self.video_label.config(image=self.placeholder_image)
         self.video_label.image = self.placeholder_image
 
