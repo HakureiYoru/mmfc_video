@@ -1,3 +1,4 @@
+#!/usr/bin/env python3
 import os
 import random
 import tkinter as tk
@@ -284,6 +285,11 @@ class VideoPlayerApp:
 
 
 # 创建并运行Tkinter主循环
-root = tk.Tk()
-app = VideoPlayerApp(root)
-root.mainloop()
+def main():
+    root = tk.Tk()
+    app = VideoPlayerApp(root)
+    root.mainloop()
+
+
+if __name__ == "__main__":
+    main()
