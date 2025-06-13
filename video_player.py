@@ -9,7 +9,6 @@ import time
 # 支持的视频格式
 VIDEO_FORMATS = ('.mp4', '.avi', '.mov')
 
-
 class VideoPlayerApp:
     def __init__(self, root):
         self.root = root
