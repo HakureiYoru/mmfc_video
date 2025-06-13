@@ -13,8 +13,8 @@ class VideoPlayerApp:
     def __init__(self, root):
         self.root = root
         self.root.title("视频播放器")
-        self.root.geometry("1000x500")  # 设置窗口尺寸
-        self.root.minsize(600, 400)
+        self.root.geometry("1000x780")  # 设置窗口尺寸以容纳720x720的播放区域
+        self.root.minsize(600, 600)
 
         # 使布局在调整窗口大小时能够自适应
         self.root.grid_rowconfigure(0, weight=1)
@@ -35,13 +35,14 @@ class VideoPlayerApp:
         self.bg_label.place(x=0, y=0, relwidth=1, relheight=1)
         self.root.bind("<Configure>", self.resize_bg_image)
         # 右侧视频显示框架
-        self.video_frame = ttk.Frame(self.root, style="MainFrame.TFrame")
-        self.video_frame.grid(row=0, column=1, sticky="nsew", padx=(0, 10), pady=10)
+        self.video_frame = ttk.Frame(self.root, style="MainFrame.TFrame", width=720, height=720)
+        self.video_frame.grid(row=0, column=1, sticky="n", padx=(0, 10), pady=10)
+        self.video_frame.grid_propagate(False)
         self.video_frame.grid_rowconfigure(0, weight=1)
         self.video_frame.grid_columnconfigure(0, weight=1)
 
-        self.video_label = tk.Label(self.video_frame, relief="sunken", borderwidth=2, background="black")
-        self.video_label.grid(row=0, column=0, sticky="nsew")
+        self.video_label = tk.Label(self.video_frame, relief="sunken", borderwidth=2, background="black", width=720, height=720)
+        self.video_label.grid(row=0, column=0)
 
         # 进度条，放在视频显示标签下方
         self.progress = ttk.Progressbar(self.video_frame, orient="horizontal", mode="determinate", style="TProgressbar")
@@ -90,9 +91,7 @@ class VideoPlayerApp:
 
         # 设置占位符，根据当前标签大小生成
         self.root.update_idletasks()
-        placeholder_w = self.video_label.winfo_width() or 460
-        placeholder_h = self.video_label.winfo_height() or 480
-        self.placeholder_image = self.create_placeholder_image(placeholder_w, placeholder_h)
+        self.placeholder_image = self.create_placeholder_image(720, 720)
         self.video_label.config(image=self.placeholder_image)
         self.video_label.image = self.placeholder_image
 
@@ -244,9 +243,6 @@ class VideoPlayerApp:
 
 
 
-                label_width = self.video_label.winfo_width() or 460
-                label_height = self.video_label.winfo_height() or 480
-                frame = cv2.resize(frame, (label_width, label_height))
                 frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
                 image = Image.fromarray(frame)
                 image_tk = ImageTk.PhotoImage(image)
@@ -282,9 +278,7 @@ class VideoPlayerApp:
         self.bg_label.image = self.bg_photo  # 避免垃圾回收
 
         if not self.is_playing:
-            placeholder_w = self.video_label.winfo_width() or 460
-            placeholder_h = self.video_label.winfo_height() or 480
-            self.placeholder_image = self.create_placeholder_image(placeholder_w, placeholder_h)
+            self.placeholder_image = self.create_placeholder_image(720, 720)
             self.video_label.config(image=self.placeholder_image)
             self.video_label.image = self.placeholder_image
 
@@ -292,9 +286,7 @@ class VideoPlayerApp:
         if self.cap:
             self.cap.release()
         self.is_playing = False
-        placeholder_w = self.video_label.winfo_width() or 460
-        placeholder_h = self.video_label.winfo_height() or 480
-        self.placeholder_image = self.create_placeholder_image(placeholder_w, placeholder_h)
+        self.placeholder_image = self.create_placeholder_image(720, 720)
         self.video_label.config(image=self.placeholder_image)
         self.video_label.image = self.placeholder_image
 
