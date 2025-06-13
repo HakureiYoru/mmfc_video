@@ -278,6 +278,7 @@ class VideoPlayerApp:
         self.video_label.config(image=self.placeholder_image)
         self.video_label.image = self.placeholder_image
 
+
         # 启用按钮
         self.play_video_button.config(state='normal')
         self.replay_video_button.config(state='normal')
