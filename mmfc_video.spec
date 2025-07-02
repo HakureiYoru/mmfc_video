@@ -1,19 +1,28 @@
 # -*- mode: python ; coding: utf-8 -*-
 
-
 a = Analysis(
-    ['video_player.py'],
+    ['run_mmfc_video.py'],
     pathex=[],
     binaries=[],
-    datas=[('img', 'img')],
-    hiddenimports=[],
+    datas=[('assets', 'assets')],
+    hiddenimports=[
+        'PySide6.QtCore',
+        'PySide6.QtGui',
+        'PySide6.QtWidgets',
+        'PySide6.QtMultimedia',
+        'PySide6.QtMultimediaWidgets',
+        'mmfc_video.ui',
+        'mmfc_video.logic', 
+        'mmfc_video.utils'
+    ],
     hookspath=[],
     hooksconfig={},
     runtime_hooks=[],
-    excludes=[],
+    excludes=['tkinter', 'matplotlib', 'numpy'],
     noarchive=False,
     optimize=0,
 )
+
 pyz = PYZ(a.pure)
 
 exe = EXE(
@@ -22,7 +31,7 @@ exe = EXE(
     a.binaries,
     a.datas,
     [],
-    name='video_player',
+    name='MMFC-VIDEO',
     debug=False,
     bootloader_ignore_signals=False,
     strip=False,
@@ -35,4 +44,5 @@ exe = EXE(
     target_arch=None,
     codesign_identity=None,
     entitlements_file=None,
-)
+    icon='assets/myicon.ico'
+) 
